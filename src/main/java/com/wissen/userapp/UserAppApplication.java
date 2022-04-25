@@ -9,10 +9,12 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @SpringBootApplication
 @RestController
@@ -23,13 +25,22 @@ public class UserAppApplication {
 	@Lazy
 	@Autowired
 	RestTemplate template;
+	public static final String tinyUrl= "http://tinyurl/urls/tinyurl";
+	public static final String redirectShortUrl= "http://tinyurl/urls/longurl/";
 
 	@PostMapping("/tinyurl")
 	public UrlResponse createTinyUrl(@RequestBody UrlRequest urlRequest){
 
-		String url = "http://tinyurl/urls/tinyurl";
+		String url = tinyUrl;
 		UrlResponse object = template.postForObject(url, urlRequest, UrlResponse.class);
 		return object;
+	}
+
+	@GetMapping("/longurl/{shorturl}")
+	public ResponseEntity<?> getLongUrl(@PathVariable("shorturl") String shortUrl, HttpServletResponse response) throws IOException {
+		String url = redirectShortUrl+ shortUrl;
+		template.getForObject(url, null, String.class);
+		return null;
 	}
 
 	public static void main(String[] args) {
